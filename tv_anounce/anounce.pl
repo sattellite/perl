@@ -1,4 +1,34 @@
 #!/usr/bin/env perl
+# Author: sattellite
+# E-Mail: sattellite[at]bks-tv.ru
+# License: BSD
+#                           Copyright (c) 2010, sattellite
+#       Redistribution and use in source and binary forms, with or without
+#       modification, are permitted provided that the following conditions are
+#       met:
+#
+#       * Redistributions of source code must retain the above copyright
+#         notice, this list of conditions and the following disclaimer.
+#       * Redistributions in binary form must reproduce the above
+#         copyright notice, this list of conditions and the following disclaimer
+#         in the documentation and/or other materials provided with the
+#         distribution.
+#       * Neither the name of the  nor the names of its
+#         contributors may be used to endorse or promote products derived from
+#         this software without specific prior written permission.
+#
+#       THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+#       "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+#       LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+#       A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+#       OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+#       SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+#       LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+#       DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+#       THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+#       (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+#       OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
 use strict;
 use warnings;
 
@@ -55,24 +85,50 @@ my %list = ( # Список
 
 my $ua = LWP::UserAgent->new;
 
-# Вывести список каналов
-print "Список каналов:\n";
-for my $l ( sort keys %list ) {
-    print "$l: $list{$l}\n";
+&list();
+
+sub list
+{   # Вывести список каналов и выбрать нужный
+    print "Список каналов:\n00: Все каналы\n";
+    for my $l ( sort keys %list ) {
+        print "$l: $list{$l}\n";
+    }
+
+    print "Веберите канал из списка: ";
+    my $choise = <STDIN>;
+    chomp( $choise );
+    &anounce( $choise );
+    return 1;
 }
-print "Веберите канал из списка: ";
-my $choise = <STDIN>;
-chomp( $choise );
 
-# Сформировать анонс
-my $p = &pars( &get_an( $chanels{$list{$choise}} ) );
-my $e = &effect( $p );
+sub anounce
+{   # Сформировать анонс
+    my ( $choise ) = @_;
+    if ( $choise ne '00' ) {
+        my $p = &pars( &get_an( $chanels{$list{$choise}} ) );
+        my $e = &effect( $p );
+        &wr( $e, $choise );
+        return 1;
+    } else {
+        for my $l ( sort keys %list ) {
+            my $p = &pars( &get_an( $chanels{$list{$l}} ) );
+            my $e = &effect( $p );
+            &wr( $e, $l );
+        }
+        return 1;
+    }
+}
 
-# Запись в файл
-open (CH, ">", "tv/$list{$choise}");
-print CH $e;
-close CH;
-print "Создан файл $list{$choise}";
+sub wr
+{   # Запись в файл
+    my ( $e, $choise ) = @_;
+    my $file = $list{$choise};
+    open (CH, ">", "tv/$file" );
+    print CH $e;
+    close CH;
+    print "Создан файл \"$file\"\n";
+    return 1;
+}
 
 sub encoding
 {   # Изменение кодировки с cp1251 в utf-8
@@ -85,16 +141,13 @@ sub get_an
 {   # Запрос анонса
     my ( $ch ) = @_;
     my $request = POST($url,
-	    Content    => {
-    		# Дни недели по порядку (в итоге вся неделя)
-	    	#
-		    # Канал берется из значения чекбоксов указанных в $url
-    		week   => &week,
-	    	day    => '1,2,3,4,5,6,7',
-		    chanel => $ch,
-    	},
+        Content    => {
+            week   => &week,
+            day    => '1,2,3,4,5,6,7',
+            chanel => $ch,
+        },
     );
-    
+
     my $response = $ua->request( $request );
     my $str = &encoding( $response->content );
     return $str;
@@ -112,12 +165,12 @@ sub week
 
 sub pars
 {   # Выпарсивание куска, в котором содержатся анонсы программ
-	my ( $str ) = @_;
-	$str =~ /(<p><font.*pre>)<table/si;
-	$str = $1;
-	return $str;
+    my ( $str ) = @_;
+    $str =~ /(<p><font.*pre>)<table/si;
+    $str = $1;
+    return $str;
 }
-	
+
 sub effect
 {   # Оформление текста под таблицу стилей сайта http://bks-tv.ru/
     my ( $text ) = @_;
@@ -138,5 +191,6 @@ sub effect
 # TODO
 # + Брать номер недели с сайта
 # + Иметь список используемых каналов с этого сайта
-# - Сделать возможность использовать эти каналы ^^^
+# + Сделать возможность использовать эти каналы ^^^
+# + Запись в файлы всех оформленных анонсов
 # - Дописать парсинг прочих возможных каналов с нужных сайтов
