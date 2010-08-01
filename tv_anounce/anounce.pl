@@ -118,7 +118,23 @@ sub anounce
 sub wr
 {   # Запись в файл
     my ( $e, $choise ) = @_;
+
+    sub dat 
+    {   # Сегодняшняя дата
+        my ($d,$m,$y) = (localtime(time))[3,4,5];
+        $y += 1900; $m += 1;
+
+        sub z
+        {   # Если число однозначное, то пририсовать ноль к нему
+            if(scalar split( '', $_[0] ) == 1) { $_[0] = '0'.$_[0] };
+            return $_[0];
+        }
+        my $dat = $y.'-'.&z($m).'-'.&z($d);
+        return $dat;
+    }
+
     my $file = $list{$choise};
+    $file = &dat().' '.$file;
     open (CH, ">", "tv/$file" );
     print CH $e;
     close CH;
