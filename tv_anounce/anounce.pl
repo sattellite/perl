@@ -81,57 +81,46 @@ my %list = ( # Список
 
 my $ua = LWP::UserAgent->new;
 
-&list();
-
-sub list
-{   # Вывести список каналов и выбрать нужный
-    print "Список каналов:\n00: Все каналы\n";
-    for my $l ( sort keys %list ) {
-        print "$l: $list{$l}\n";
-    }
-
-    print "Веберите канал из списка: ";
-    my $choise = <STDIN>;
-    chomp( $choise );
-    &anounce( $choise );
-    return 1;
+# Вывести список каналов и выбрать нужный
+print "Список каналов:\n00: Все каналы\n";
+for my $l ( sort keys %list ) {
+    print "$l: $list{$l}\n";
 }
 
-sub anounce
-{   # Сформировать анонс
-    my ( $choise ) = @_;
-    if ( $choise ne '00' ) {
-        my $p = &pars( &get_an( $chanels{$list{$choise}} ) );
+print "Веберите канал из списка: ";
+my $choise = <STDIN>;
+chomp( $choise );
+
+# Сформировать анонс
+if ( $choise ne '00' ) {
+    my $p = &pars( &get_an( $chanels{$list{$choise}} ) );
+    my $e = &effect( $p );
+    &wr( $e, $choise );
+} else {
+    for my $l ( sort keys %list ) {
+        my $p = &pars( &get_an( $chanels{$list{$l}} ) );
         my $e = &effect( $p );
-        &wr( $e, $choise );
-        return 1;
-    } else {
-        for my $l ( sort keys %list ) {
-            my $p = &pars( &get_an( $chanels{$list{$l}} ) );
-            my $e = &effect( $p );
-            &wr( $e, $l );
-        }
-        return 1;
+        &wr( $e, $l );
     }
+}
+
+sub dat 
+{   # Сегодняшняя дата
+    my ($d,$m,$y) = (localtime(time))[3,4,5];
+    $y += 1900; $m += 1;
+
+    # Если число однозначное, то пририсовать ноль к нему
+    if(scalar split( '', $d ) == 1) { $d = '0'.$d };
+    if(scalar split( '', $m ) == 1) { $m = '0'.$m };
+
+    my $dat = $y.'-'.$m.'-'.$d;
+    return $dat;
 }
 
 sub wr
 {   # Запись в файл
     my ( $e, $choise ) = @_;
 
-    sub dat 
-    {   # Сегодняшняя дата
-        my ($d,$m,$y) = (localtime(time))[3,4,5];
-        $y += 1900; $m += 1;
-
-        sub z
-        {   # Если число однозначное, то пририсовать ноль к нему
-            if(scalar split( '', $_[0] ) == 1) { $_[0] = '0'.$_[0] };
-            return $_[0];
-        }
-        my $dat = $y.'-'.&z($m).'-'.&z($d);
-        return $dat;
-    }
 
     my $file = $list{$choise};
     $file = &dat().' '.$file;
@@ -139,7 +128,6 @@ sub wr
     print CH $e;
     close CH;
     print "Создан файл \"$file\"\n";
-    return 1;
 }
 
 sub encoding
