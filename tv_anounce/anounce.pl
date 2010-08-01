@@ -92,16 +92,19 @@ my $choise = <STDIN>;
 chomp( $choise );
 
 # Сформировать анонс
-if ( $choise ne '00' ) {
-    my $p = &pars( &get_an( $chanels{$list{$choise}} ) );
-    my $e = &effect( $p );
-    &wr( $e, $choise );
-} else {
+if ( $choise eq '00' ) {
     for my $l ( sort keys %list ) {
         my $p = &pars( &get_an( $chanels{$list{$l}} ) );
         my $e = &effect( $p );
         &wr( $e, $l );
     }
+} elsif ( $choise =~ /^[01]\d$/) {
+    my $p = &pars( &get_an( $chanels{$list{$choise}} ) );
+    my $e = &effect( $p );
+    &wr( $e, $choise );
+} else {
+    print "Такого канала не найдено. Внимательней читай что пишешь.\n";
+    exit;
 }
 
 sub dat 
