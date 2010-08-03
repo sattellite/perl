@@ -1,32 +1,4 @@
 #!/usr/bin/env perl
-# Скрипт для парсинга RSS ленты формируемой с помощью модуля RSS для phpBB форума/трекера
-# http://naklon.info/rss/about.htm
-# Author: sattellite
-# E-Mail: sattellite[at]bks-tv.ru
-# License: MIT
-
-#   The MIT License
-#
-#   Copyright (c) 2010 sattellite
-#
-#   Permission is hereby granted, free of charge, to any person obtaining a copy
-#   of this software and associated documentation files (the "Software"), to deal
-#   in the Software without restriction, including without limitation the rights
-#   to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-#   copies of the Software, and to permit persons to whom the Software is
-#   furnished to do so, subject to the following conditions:
-#
-#   The above copyright notice and this permission notice shall be included in
-#   all copies or substantial portions of the Software.
-#
-#   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-#   IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-#   FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-#   AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-#   LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-#   OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-#   THE SOFTWARE.
-
 use strict;
 use warnings;
 use utf8;
@@ -106,3 +78,45 @@ sub msg
     # возвращающий скаляр в исходном виде. В &pd делили по переносу строки, а тут для красоты
     # восстанавливаем эти самые переносы.
 }
+
+=head1 ОПИСАНИЕ
+
+Скрипт для парсинга RSS ленты формируемой с помощью модуля RSS для phpBB форума/трекера
+( L<< http://naklon.info/rss/about.htm >> - ссылка на модуль RSS для phpBB форума )
+
+=head1 ИСПОЛЬЗОВАНИЕ
+
+Настроить любой сервер с поддержкой CGI и запустить в нем этот файл.
+
+=head1 АВТОР
+
+Aleksander Groschev
+E-Mail: L<< E<lt>sattellite@bks-tv.ruE<gt> >>
+JabberID: L<< E<lt>sattellite@bks-tv.ruE<gt> >> 
+
+=head1 ЛИЦЕНЗИЯ
+
+Эта программа распространяется под лицензией MIT (MIT License)
+
+Copyright (c) 2010 Aleksander Groschev
+
+Данная лицензия разрешает, безвозмездно, лицам, получившим копию данного программного
+обеспечения и сопутствующей документации (в дальнейшем именуемыми "Программное
+Обеспечение"), использовать Программное Обеспечение без ограничений, включая
+неограниченное право на использование, копирование, изменение, добавление, публикацию,
+распространение, сублицензирование и/или продажу копий Программного Обеспечения,
+также как и лицам, которым предоставляется данное Программное Обеспечение, при
+соблюдении следующих условий:
+
+Вышеупомянутый копирайт и данные условия должны быть включены во все копии или
+значимые части данного Программного Обеспечения.
+
+ДАННОЕ ПРОГРАММНОЕ ОБЕСПЕЧЕНИЕ ПРЕДОСТАВЛЯЕТСЯ «КАК ЕСТЬ», БЕЗ ЛЮБОГО ВИДА ГАРАНТИЙ,
+ЯВНО ВЫРАЖЕННЫХ ИЛИ ПОДРАЗУМЕВАЕМЫХ, ВКЛЮЧАЯ, НО НЕ ОГРАНИЧИВАЯСЬ ГАРАНТИЯМИ ТОВАРНОЙ
+ПРИГОДНОСТИ, СООТВЕТСТВИЯ ПО ЕГО КОНКРЕТНОМУ НАЗНАЧЕНИЮ И НЕНАРУШЕНИЯ ПРАВ. НИ В КАКОМ
+СЛУЧАЕ АВТОРЫ ИЛИ ПРАВООБЛАДАТЕЛИ НЕ НЕСУТ ОТВЕТСТВЕННОСТИ ПО ИСКАМ О ВОЗМЕЩЕНИИ
+УЩЕРБА, УБЫТКОВ ИЛИ ДРУГИХ ТРЕБОВАНИЙ ПО ДЕЙСТВУЮЩИМ КОНТРАКТАМ, ДЕЛИКТАМ ИЛИ ИНОМУ,
+ВОЗНИКШИМ ИЗ, ИМЕЮЩИМ ПРИЧИНОЙ ИЛИ СВЯЗАННЫМ С ПРОГРАММНЫМ ОБЕСПЕЧЕНИЕМ ИЛИ
+ИСПОЛЬЗОВАНИЕМ ПРОГРАММНОГО ОБЕСПЕЧЕНИЯ ИЛИ ИНЫМИ ДЕЙСТВИЯМИ С ПРОГРАММНЫМ ОБЕСПЕЧЕНИЕМ.
+
+=cut
