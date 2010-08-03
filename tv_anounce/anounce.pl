@@ -1,60 +1,42 @@
 #!/usr/bin/env perl
-# Author: sattellite
-# E-Mail: sattellite[at]bks-tv.ru
-# License: MIT
-
-#   The MIT License
-#
-#   Copyright (c) 2010 sattellite
-#
-#   Permission is hereby granted, free of charge, to any person obtaining a copy
-#   of this software and associated documentation files (the "Software"), to deal
-#   in the Software without restriction, including without limitation the rights
-#   to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-#   copies of the Software, and to permit persons to whom the Software is
-#   furnished to do so, subject to the following conditions:
-#
-#   The above copyright notice and this permission notice shall be included in
-#   all copies or substantial portions of the Software.
-#
-#   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-#   IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-#   FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-#   AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-#   LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-#   OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-#   THE SOFTWARE.
-
 use strict;
 use warnings;
 
 use LWP;
 use HTTP::Request::Common;
 use Encode;
+use File::Path qw(make_path);
 
-my $url = 'http://www.kulichki.tv/andgon/cgi-bin/itv.cgi';
-my $m_url = 'http://www.kulichki.tv/';
+my $url      = 'http://www.kulichki.tv/andgon/cgi-bin/itv.cgi';
+my $week_url = 'http://www.kulichki.tv';
+my $ch_url   = 'http://www.kulichki.tv/cgi-bin/gpack.cgi';
+
+
+my $ua = LWP::UserAgent->new;
+
+my $w = &week();
+my $v = &get_ch();
 
 my %chanels = ( # Список каналов
-    'Первый'         =>  '47.7',
-    'Россия 1'       =>  '52.7',
-    'НТВ'            =>  '41.7',
-    'ТВ-Центр'       =>  '63.7',
-    'ТНТ'            =>  '65.7',
-    'ТВ-3'           =>  '64.7',
-    'ДТВ'            =>  '26.7',
-    'РенТВ'          =>  '13.7',
-    'СТС'            =>  '59.7',
-    '5 канал'        =>  '49.7',
-    'Россия 2'       =>  '53.7',
-    'Россия К'       =>  '54.7',
-    'Звезда'         =>  '27.7',
-    'Беларусь ТВ'    =>  '22.7',
-    'Мир'            =>  '37.7',
-    'TV XXI'         =>  '60.7',
-    'TV 1000'        =>  '62.7',
-    'Школьник ТВ'    =>  '70.7',
-    'Viasat History' =>  '21.7',
+    'Первый'         =>  "47.$v",
+    'Россия 1'       =>  "52.$v",
+    'НТВ'            =>  "41.$v",
+    'ТВ-Центр'       =>  "63.$v",
+    'ТНТ'            =>  "65.$v",
+    'ТВ-3'           =>  "64.$v",
+    'ДТВ'            =>  "26.$v",
+    'РенТВ'          =>  "13.$v",
+    'СТС'            =>  "59.$v",
+    '5 канал'        =>  "49.$v",
+    'Россия 2'       =>  "53.$v",
+    'Россия К'       =>  "54.$v",
+    'Звезда'         =>  "27.$v",
+    'Беларусь ТВ'    =>  "22.$v",
+    'Мир'            =>  "37.$v",
+    'TV XXI'         =>  "60.$v",
+    'TV 1000'        =>  "62.$v",
+    'Школьник ТВ'    =>  "70.$v",
+    'Viasat History' =>  "21.$v",
     );
 
 my %list = ( # Список
@@ -79,7 +61,6 @@ my %list = ( # Список
     '19' => 'Viasat History',
     );
 
-my $ua = LWP::UserAgent->new;
 
 # Вывести список каналов и выбрать нужный
 print "Список каналов:\n00: Все каналы\n";
@@ -90,6 +71,10 @@ for my $l ( sort keys %list ) {
 print "Веберите канал из списка: ";
 my $choise = <STDIN>;
 chomp( $choise );
+
+# Создать директорию для хранения анонсов
+my $dir = &dat();
+make_path $dir unless -d $dir;
 
 # Сформировать анонс
 if ( $choise eq '00' ) {
@@ -124,10 +109,11 @@ sub wr
 {   # Запись в файл
     my ( $e, $choise ) = @_;
 
-
     my $file = $list{$choise};
-    $file = &dat().' '.$file;
-    open (CH, ">", "tv/$file" );
+    #$file = &dat().' '.$file;
+    
+
+    open (CH, ">", "$dir/$file" );
     print CH $e;
     close CH;
     print "Создан файл \"$file\"\n";
@@ -145,22 +131,39 @@ sub get_an
     my ( $ch ) = @_;
     my $request = POST($url,
         Content    => {
-            week   => &week,
+            week   => $w,
             day    => '1,2,3,4,5,6,7',
             chanel => $ch,
         },
     );
 
-    my $response = $ua->request( $request );
-    my $str = &encoding( $response->content );
+    my $response = $ua -> request( $request );
+    my $str = &encoding( $response -> content );
     return $str;
 }
 
+sub get_ch
+{   # Запрос по каналам 
+    my $request = POST($ch_url,
+        Content    => {
+            week   => $w,
+            pakets => 'anons',
+        },
+    );
+
+    my $response = $ua -> request( $request );
+    my $str = $response -> content;
+    $str =~ /input type="checkbox" name="chanel" value="(.*?)"/si;
+    $str = (split(/\./, $1))[1];
+    return $str;
+}
+
+
 sub week
 {   # Номер недели
-    my $req = HTTP::Request -> new(GET => $m_url);
-    my $res = $ua -> request( $req );
-    my $week = $res -> content;
+    my $req = HTTP::Request -> new(GET => $week_url);
+    my $resw = $ua -> request( $req );
+    my $week = $resw -> content;
     $week =~ /input type="hidden" name="week" value=(\d+)/si;
     $week = $1;
     return $week;
@@ -182,7 +185,7 @@ sub effect
     $text =~ s/b>/strong>/sig;
     $text =~ s/\n|<br>/<br \/>\n/sig;
     $text =~ s/<hr>/<hr>\n/sig;
-    $text =~ s/\(Анонс gmt\+3\).*?(<br)/$1/sig;
+    $text =~ s/\(Анонс gmt\+\d+\).*?(<br)/$1/sig;
     $text =~ s/^(\d.*)/<br \/>\n$1/mig;
     $text =~ s/^(\d+:\d+\s)(.*)\(/$1<span style="color: #3366ff">$2<\/span>\(/mig;
     $text =~ s/^(\d.*)(\()/<strong>$1<\/strong>$2/mig;
@@ -191,5 +194,57 @@ sub effect
     return $text;
 }
 
-# TODO
-# - Дописать парсинг прочих возможных каналов с нужных сайтов
+
+=head1 ОПИСАНИЕ
+
+Создание недельного анонса ТВ прорамм для телевизионных каналов.
+Создается поддиректория формата I<year>-I<month>-I<day>
+и в ней создаются файлы с названиями каналов, которые содержат внутри себя
+HTML-разметку.
+
+Программа создана по однйо простой причине - сэконосить себе 3 дня рабочего времени
+и заниматься более полезной работой на своем рабочем месте.
+
+=head1 ИСПОЛЬЗОВАНИЕ
+
+ ./anounce.pl
+ И выбор номера необходимого канала.
+
+=head1 АВТОР
+
+Aleksander Groschev
+E-Mail: L<< E<lt>sattellite@bks-tv.ruE<gt> >>
+JabberID: L<< E<lt>sattellite@bks-tv.ruE<gt> >> 
+
+=head1 ЛИЦЕНЗИЯ
+
+Эта программа распространяется под лицензией MIT (MIT License)
+
+Copyright (c) 2010 Aleksander Groschev
+
+Данная лицензия разрешает, безвозмездно, лицам, получившим копию данного программного
+обеспечения и сопутствующей документации (в дальнейшем именуемыми "Программное
+Обеспечение"), использовать Программное Обеспечение без ограничений, включая
+неограниченное право на использование, копирование, изменение, добавление, публикацию,
+распространение, сублицензирование и/или продажу копий Программного Обеспечения,
+также как и лицам, которым предоставляется данное Программное Обеспечение, при
+соблюдении следующих условий:
+
+Вышеупомянутый копирайт и данные условия должны быть включены во все копии или
+значимые части данного Программного Обеспечения.
+
+ДАННОЕ ПРОГРАММНОЕ ОБЕСПЕЧЕНИЕ ПРЕДОСТАВЛЯЕТСЯ «КАК ЕСТЬ», БЕЗ ЛЮБОГО ВИДА ГАРАНТИЙ,
+ЯВНО ВЫРАЖЕННЫХ ИЛИ ПОДРАЗУМЕВАЕМЫХ, ВКЛЮЧАЯ, НО НЕ ОГРАНИЧИВАЯСЬ ГАРАНТИЯМИ ТОВАРНОЙ
+ПРИГОДНОСТИ, СООТВЕТСТВИЯ ПО ЕГО КОНКРЕТНОМУ НАЗНАЧЕНИЮ И НЕНАРУШЕНИЯ ПРАВ. НИ В КАКОМ
+СЛУЧАЕ АВТОРЫ ИЛИ ПРАВООБЛАДАТЕЛИ НЕ НЕСУТ ОТВЕТСТВЕННОСТИ ПО ИСКАМ О ВОЗМЕЩЕНИИ
+УЩЕРБА, УБЫТКОВ ИЛИ ДРУГИХ ТРЕБОВАНИЙ ПО ДЕЙСТВУЮЩИМ КОНТРАКТАМ, ДЕЛИКТАМ ИЛИ ИНОМУ,
+ВОЗНИКШИМ ИЗ, ИМЕЮЩИМ ПРИЧИНОЙ ИЛИ СВЯЗАННЫМ С ПРОГРАММНЫМ ОБЕСПЕЧЕНИЕМ ИЛИ
+ИСПОЛЬЗОВАНИЕМ ПРОГРАММНОГО ОБЕСПЕЧЕНИЯ ИЛИ ИНЫМИ ДЕЙСТВИЯМИ С ПРОГРАММНЫМ ОБЕСПЕЧЕНИЕМ.
+
+=head4 TODO
+1. Дописать парсинг прочих возможных каналов с нужных сайтов
+- http://www.viasat-channels.tv/
+- http://www.teleguide.info/download/new3/xmltv.xml.gz
+- На всякий случай http://www.tvpilot.ru/
+
+=cut
