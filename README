@@ -2,3 +2,6 @@
 
 = parser - create HTML page from RSSfeed (http://naklon.info/rss/about.htm)
 = tv_anounce - create anouncements for 19 russian TV chanels
+= weather
+	- rp5.pl - weather from rp5.ru for Bryansk
+	- weather - weather from google
