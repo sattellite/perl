@@ -4,4 +4,4 @@
 = tv_anounce - create anouncements for 19 russian TV chanels
 = weather
 	- rp5.pl - weather from rp5.ru for Bryansk
-	- weather - weather from google
+	- weather.pl - weather from google
