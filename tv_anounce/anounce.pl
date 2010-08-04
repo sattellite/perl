@@ -154,7 +154,7 @@ sub pars
 }
 
 sub effect
-{   # Оформление текста под таблицу стилей сайта http://bks-tv.ru/
+{   # Оформление текста под таблицу стилей сайта
     my ( $text ) = @_;
     $text =~ s/<p>|<pre>|<\/pre>//sig;
     $text =~ s/font size=\+2|font/h3/sig;
