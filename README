@@ -1,7 +1,9 @@
 ===== PERL scripts =====
 
 = parser - create HTML page from RSSfeed (http://naklon.info/rss/about.htm)
-= tv_anounce - create anouncements for 19 russian TV chanels
+= tv_anounce
+	- anounce.pl - create anouncements for 19 russian TV chanels
+	- tv-programme - create a TV-programm for the 38 russian channels
 = weather
 	- rp5.pl - weather from rp5.ru for Bryansk
 	- weather.pl - weather from google
