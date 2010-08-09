@@ -20,21 +20,21 @@ my @IDs = qw(1);# 2 676 4 104 101 103 109 209 235 100052 663 226 326 288 300047 
 
 foreach my $n ( @IDs ) {
     print "$file->{'channel'}->{$n}->{'display-name'}->{'content'}\t";
-    if ( $file->{'programme'}->{'channel'} == $n ) {
-        my $date = &times( $n );
-        print $date;
-    }
-}
-
-
-sub times
-{   # Время
     for ( my $i = 0; $i < @{$file->{'programme'}}; $i++) {
-        if ( $file->{'programme'}->["$i"]->{'channel'} = $_[0] ) {
-            my $date = $file->{'programme'}->["$i"]->{'start'};
-            $date =~ m/(....)(..)(..)(..)(..).+?/si;
-            my $times = $1.'-'.$2.'-'.$3.'  '.$4.':'.$5;
-#            print "$1\-$2\-$3  $4:$5\n";
+        if ( ($file->{'programme'}->["$i"]{'channel'}) == $n ) {
+            my $date = &times( $n, $i );
+            print "$date\n";
         }
     }
 }
+
+sub times
+{   # Время
+    if ( $file->{'programme'}->["$_[1]"]->{'channel'} = $_[0] ) {
+        my $date = $file->{'programme'}->["$_[1]"]->{'start'};
+        $date =~ m/(....)(..)(..)(..)(..).+?/si;
+        my $times = $1.'-'.$2.'-'.$3.'  '.$4.':'.$5;
+        return $times;
+#       print "$1\-$2\-$3  $4:$5\n";
+    }
+} # times
