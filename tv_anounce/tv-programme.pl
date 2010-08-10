@@ -45,28 +45,34 @@ make_path $dir unless -d $dir;
 
 foreach my $n ( @IDs ) {
     my $a = "1";
-    my ($times, $d, $title);
+    my ( $times, $d, $title, $out );
     my $cr_file = "$file->{'channel'}->{$n}->{'display-name'}->{'content'}";
-    for ( my $i = 0; $i < @{$file->{'programme'}}; $i++) {
+    for ( my $i = 0; $i < @{$file->{'programme'}}; $i++ ) {
         if ( ($file->{'programme'}->["$i"]{'channel'}) == $n ) {
             my $date = $file->{'programme'}->["$i"]->{'start'};
-            $title = $file->{'programme'}->["$i"]->{'title'}->{'content'};
+
+            if ( $file->{'programme'}->["$i"]->{'desc'}->{'content'} ) {
+                $title = $file->{'programme'}->["$i"]->{'title'}->{'content'}."\n<br><em>".$file->{'programme'}->["$i"]->{'desc'}->{'content'}.'</em><br>';
+            } else {
+                $title = $file->{'programme'}->["$i"]->{'title'}->{'content'}.'<br>';
+            }
+
             $date =~ m/(....)(..)(..)(..)(..).+?/si;
 
             if ( $d ne $3 ) {
-                $times = $day{$a}.$3.' '.$mon{"$2"}."\n".$4.':'.$5;
+                $times = '<br><h3><strong>'.$day{$a}.$3.' '.$mon{"$2"}."<\/strong><\/h3><hr><br>\n<strong><span style=\"color: #3366ff\">".$4.':'.$5.'</span></strong>';
                 $d = $3;
                 $a++;
             } else {
-                $times = $4.':'.$5;
+                $times = '<strong><span style="color: #3366ff">'.$4.':'.$5.'</span></strong>';
             }
-
-            open (CH, ">>", "$dir/$cr_file" );
-            print CH "$times  $title\n";
-            close CH;
-#            print "$times  $title\n";
+            
+            $out .= "$times $title\n";
         }
     }
+    open ( CH, ">", "$dir/$cr_file" );
+    print CH $out;
+    close CH;
     print "Создан файл \"$cr_file\"\n";
 }
 
