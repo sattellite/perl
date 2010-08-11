@@ -9,60 +9,50 @@ use IO::File;
 use File::Path qw(make_path);
 use utf8;
 
-my $fh = IO::File->new( 'xmltv.xml' );
-my $file = XMLin( $fh );
+my %month = ( '01' => 'января',   '02' => 'февраля',
+              '03' => 'марта',    '04' => 'апреля',
+              '05' => 'мая',      '06' => 'июня',
+              '07' => 'июля',     '08' => 'августа',
+              '09' => 'сентября', '10' => 'октября',
+              '11' => 'ноября',   '12' => 'декабря' );
 
-my %mon = (
-    '01' => 'января',
-    '02' => 'февраля',
-    '03' => 'марта',
-    '04' => 'апреля',
-    '05' => 'мая',
-    '06' => 'июня',
-    '07' => 'июля',
-    '08' => 'августа',
-    '09' => 'сентября',
-    '10' => 'октября',
-    '11' => 'ноября',
-    '12' => 'декабря',
-);
+my %day = (    '1' => 'Понедельник. ', '2' => 'Вторник. ',
+               '3' => 'Среда. ',       '4' => 'Четверг. ',
+               '5' => 'Пятница. ',     '6' => 'Суббота. ',
+               '7' => 'Воскресенье. ', '8' => 'Понедельник. ' );
 
-my %day = (
-    '1' => 'Понедельник. ',
-    '2' => 'Вторник. ',
-    '3' => 'Среда. ',
-    '4' => 'Четверг. ',
-    '5' => 'Пятница. ',
-    '6' => 'Суббота. ',
-    '7' => 'Воскресенье. ',
-    '8' => 'Понедельник. ',
-);
+my $fileHandle = IO::File->new( 'xmltv.xml' );
+my $xmlTree = XMLin( $fileHandle );
 
-my @IDs = qw(1 2 676 4 104 101 103 109 209 235 100052 663 226 326 288 300047 289 3 105 300020 595 272 300007 100010 5 107 108 503 300003 727 300035 255 325 222 313 330 100018 100017);
+my $directory = &date();
+make_path $directory unless -d $directory;
 
-my $dir = &dat();
-make_path $dir unless -d $dir;
+my @channelID = qw(1 2 676 4 104 101 103 109 209 235 100052 663 226 326 288 300047 289 3 105 300020 595 272 300007 100010 5 107 108 503 300003 727 300035 255 325 222 313 330 100018 100017);
 
-foreach my $n ( @IDs ) {
-    my $a = "1";
+my $progData = $xmlTree->{'programme'};
+
+foreach my $channel ( @channelID ) {
+    my $dayCounter = "1";
     my ( $times, $d, $title, $out );
-    my $cr_file = "$file->{'channel'}->{$n}->{'display-name'}->{'content'}";
-    for ( my $i = 0; $i < @{$file->{'programme'}}; $i++ ) {
-        if ( ($file->{'programme'}->["$i"]{'channel'}) == $n ) {
-            my $date = $file->{'programme'}->["$i"]->{'start'};
+    my $createFile = "$xmlTree->{'channel'}->{$channel}->{'display-name'}->{'content'}";
+    for ( my $i = 0; $i < @$progData; $i++ ) {
+        my $progNow = @$progData->["$i"];
+        if ( ( $progNow->{'channel'} ) == $channel ) {
 
-            if ( $file->{'programme'}->["$i"]->{'desc'}->{'content'} ) {
-                $title = $file->{'programme'}->["$i"]->{'title'}->{'content'}."\n<br><em>".$file->{'programme'}->["$i"]->{'desc'}->{'content'}.'</em><br>';
+            my $date = $progNow->{'start'};
+
+            if ( $progNow->{'desc'}->{'content'} ) {
+                $title = $progNow->{'title'}->{'content'}."\n<br><em>".$progNow->{'desc'}->{'content'}.'</em><br>';
             } else {
-                $title = $file->{'programme'}->["$i"]->{'title'}->{'content'}.'<br>';
+                $title = $progNow->{'title'}->{'content'}.'<br>';
             }
 
             $date =~ m/(....)(..)(..)(..)(..).+?/si;
 
             if ( $d ne $3 ) {
-                $times = '<br><h3><strong>'.$day{$a}.$3.' '.$mon{"$2"}."<\/strong><\/h3><hr><br>\n<strong><span style=\"color: #3366ff\">".$4.':'.$5.'</span></strong>';
+                $times = '<br><h3><strong>'.$day{"$dayCounter"}.$3.' '.$month{"$2"}."<\/strong><\/h3><hr><br>\n<strong><span style=\"color: #3366ff\">".$4.':'.$5.'</span></strong>';
                 $d = $3;
-                $a++;
+                $dayCounter++;
             } else {
                 $times = '<strong><span style="color: #3366ff">'.$4.':'.$5.'</span></strong>';
             }
@@ -70,13 +60,11 @@ foreach my $n ( @IDs ) {
             $out .= "$times $title\n";
         }
     }
-    open ( CH, ">", "$dir/$cr_file" );
-    print CH $out;
-    close CH;
-    print "Создан файл \"$cr_file\"\n";
+    $out =~ s/^<br><h3>/<h3>/i;
+    &writeToFile( $createFile, $out );
 }
 
-sub dat
+sub date
 { # Сегодняшняя дата
     my ($d,$m,$y) = (localtime(time))[3,4,5];
     $y += 1900; $m += 1;
@@ -87,4 +75,12 @@ sub dat
 
     my $dat = $y.'-'.$m.'-'.$d;
     return $dat;
-}
+} # date
+
+sub writeToFile
+{   # Запись в файл
+    open (FILE, ">", "$directory/$_[0]" );
+    print FILE $_[1];
+    close FILE;
+    print "Создан файл: \"$_[0]\"\n";
+} # writeToFile
