@@ -2,12 +2,13 @@
 use strict;
 use warnings;
 no warnings "all";
-
+use utf8;
 
 use XML::Simple;
+use IO::Uncompress::Gunzip qw(gunzip $GunzipError);
 use IO::File;
 use File::Path qw(make_path);
-use utf8;
+use File::Download;
 
 my %month = ( '01' => 'января',   '02' => 'февраля',
               '03' => 'марта',    '04' => 'апреля',
@@ -21,8 +22,30 @@ my %day = (    '1' => 'Понедельник. ', '2' => 'Вторник. ',
                '5' => 'Пятница. ',     '6' => 'Суббота. ',
                '7' => 'Воскресенье. ', '8' => 'Понедельник. ' );
 
+{   # Скачивание и распаковка файла с ТВ-программой
+    my $url = 'http://www.teleguide.info/download/new3/xmltv.xml.gz';
+    my $dwn = File::Download->new({
+        overwrite => 1,
+    });
+
+    if ($dwn->download($url) == 0) {
+        print "Скачиваю программу на неделю.\n";
+        $dwn->download( $url );
+    } else {
+        die "Не могу загрузить файл по ссылке $url";
+    }
+    
+    my $fileIn = "xmltv.xml.gz";
+    my $fileOut = "xmltv.xml";
+    print "Распаковываю скачанный файл.\n";
+    gunzip $fileIn => $fileOut or die "$GunzipError";
+}
+
+print "Подготовка к обработке.\n";
 my $fileHandle = IO::File->new( 'xmltv.xml' );
 my $xmlTree = XMLin( $fileHandle );
+
+print "Обработка и создание файлов\n\n";
 
 my $directory = &date();
 make_path $directory unless -d $directory;
@@ -63,6 +86,8 @@ foreach my $channel ( @channelID ) {
     $out =~ s/^<br><h3>/<h3>/i;
     &writeToFile( $createFile, $out );
 }
+
+print "\nЗавершение работы скрипта.\n";
 
 sub date
 { # Сегодняшняя дата
