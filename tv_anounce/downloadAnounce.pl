@@ -1,13 +1,17 @@
 #!/usr/bin/env perl
-use warnings;
+no warnings;
 use strict;
 
 use LWP;
 use URI;
 use HTTP::Cookies;
+use File::Path qw(make_path);
+
+my $directory = &date() ."_prog";
+make_path $directory unless -d $directory;
 
 my $srvHost = "xmltv.s-tv.ru";
-my $login = "test";
+my $login = "test;
 my $pass = "test";
 my $show = "1";
 my $xmlTV = "1";
@@ -28,11 +32,32 @@ while ( $page =~ /(\/xmltv.php\?prg=\d+\&sh\=0)\".+?>(.+?)<\/a>/sg ) {
 
 sub writeToFile
 {
-    open (FILE, ">", "prog/$_[0].xml" );
-    print FILE $_[1];
-    close FILE;
-    print "Created file: \"$_[0].xml\"\n";
+    if ( -e "$directory/$_[0].xml" ) {
+        make_path "$directory/next_week" unless -d "$directory/next_week";
+        open ( FILE, ">", "$directory/next_week/$_[0].xml" );
+        print FILE $_[0];
+        close FILE;
+        print "Created file: \"next_week\/$_[0].xml\"\n";
+    } else {
+        open ( FILE, ">", "$directory/$_[0].xml" );
+        print FILE $_[1];
+        close FILE;
+        print "Created file: \"$_[0].xml\"\n";
+    }
 }
+
+sub date
+{ # Сегодняшняя дата
+    my ($d,$m,$y) = (localtime(time))[3,4,5];
+    $y += 1900; $m += 1;
+
+    # Если число однозначное, то пририсовать ноль к нему
+    if(scalar split( '', $d ) == 1) { $d = '0'.$d };
+    if(scalar split( '', $m ) == 1) { $m = '0'.$m };
+
+    my $dat = $y.'-'.$m.'-'.$d;
+    return $dat;
+} # date
 
 =head1 ОПИСАНИЕ
 
