@@ -11,7 +11,7 @@ my $directory = &date() ."_prog";
 make_path $directory unless -d $directory;
 
 my $srvHost = "xmltv.s-tv.ru";
-my $login = "test;
+my $login = "test";
 my $pass = "test";
 my $show = "1";
 my $xmlTV = "1";
