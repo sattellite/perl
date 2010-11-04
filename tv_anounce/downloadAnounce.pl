@@ -11,8 +11,8 @@ use IO::File;
 my $file = IO::File -> new;
 
 my $srvHost = "xmltv.s-tv.ru";
-my $login = "tv4853";
-my $pass = "JfWcXQpgGO";
+my $login = "test";
+my $pass = "test";
 my $show = "1";
 my $xmlTV = "1";
 
