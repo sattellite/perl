@@ -4,6 +4,7 @@
 = tv_anounce
 	- anounce.pl - create anouncements for 19 russian TV chanels
 	- tv-programme - create a TV-programm for the 38 russian channels
+	- downloadAnounce.pl - downloading anounces from http://s-tv.ru
 = weather
 	- rp5.pl - weather from rp5.ru for Bryansk
 	- weather.pl - weather from google
