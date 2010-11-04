@@ -1,18 +1,18 @@
 #!/usr/bin/env perl
-no warnings;
+use warnings;
 use strict;
 
 use LWP;
 use URI;
 use HTTP::Cookies;
 use File::Path qw(make_path);
+use IO::File;
 
-my $directory = &date() ."_prog";
-make_path $directory unless -d $directory;
+my $file = IO::File -> new;
 
 my $srvHost = "xmltv.s-tv.ru";
-my $login = "test";
-my $pass = "test";
+my $login = "tv4853";
+my $pass = "JfWcXQpgGO";
 my $show = "1";
 my $xmlTV = "1";
 
@@ -26,55 +26,47 @@ $browser -> agent("Mozilla/5.0 (X11; U; Linux x86_64; ru; rv:1.9.2.8) Gecko/2010
 
 my $page = $browser -> get( $url ) -> content;
 
-while ( $page =~ /(\/xmltv.php\?prg=\d+\&sh\=0)\".+?>(.+?)<\/a>/sg ) {
-    writeToFile( $2, $browser->post( "http://$srvHost$1" )->content );
+while ( $page =~ /(\/xmltv.php\?prg=\d+\&sh\=0)\".+?>(.+?)<\/a>.+?(\d{4}\-\d{2}\-\d{2})/sgx ) {
+    writeToFile( $2, $browser->post( "http://$srvHost$1" )->content, $3 );
 }
 
 sub writeToFile
 {
-    if ( -e "$directory/$_[0].xml" ) {
-        make_path "$directory/next_week" unless -d "$directory/next_week";
-        open ( FILE, ">", "$directory/next_week/$_[0].xml" );
-        print FILE $_[0];
-        close FILE;
-        print "Created file: \"next_week\/$_[0].xml\"\n";
-    } else {
-        open ( FILE, ">", "$directory/$_[0].xml" );
-        print FILE $_[1];
-        close FILE;
-        print "Created file: \"$_[0].xml\"\n";
-    }
-}
+	my ( $tvName, $content, $dir) = @_;
+	make_path $dir unless -d $dir;
+    $file -> open( "> $dir/$tvName\.xml");
+    print $file $content;
+    $file -> close;
+    print "Created file: \"$dir\/$tvName.xml\"\n";
+    return 1;
+} #writeToFile
 
-sub date
-{ # Сегодняшняя дата
-    my ($d,$m,$y) = (localtime(time))[3,4,5];
-    $y += 1900; $m += 1;
+=head1 NAME
 
-    # Если число однозначное, то пририсовать ноль к нему
-    if(scalar split( '', $d ) == 1) { $d = '0'.$d };
-    if(scalar split( '', $m ) == 1) { $m = '0'.$m };
+Загрузчик телепрограммы с сайта L<< http://s-tv.ru >> в формате XMLTV.
 
-    my $dat = $y.'-'.$m.'-'.$d;
-    return $dat;
-} # date
+=head1 USAGE
 
-=head1 ОПИСАНИЕ
+ $ perl downloadAnounce.pl
 
-Скачивание файлов с телепрограммой с сайта L<< http://s-tv.ru >>
+=head1 DESCRIPTION
 
-=head1 ИСПОЛЬЗОВАНИЕ
+Скачивание файлов с телепрограммой с сайта L<< http://s-tv.ru >>.
+Скачанные файлы размещаются в директории, название которых соответствует
+началу эфирной недели.
 
- ./downloadAnounce.pl
- И выбор номера необходимого канала.
+=head1 CONFIGURATION
 
-=head1 АВТОР
+Для использования необходимо только поправить свои логин и пароль, которые
+хранятся в переменных $login и $pass.
+
+=head1 AUTHOR
 
 Aleksander Groschev
 E-Mail: L<< E<lt>sattellite@bks-tv.ruE<gt> >>
 JabberID: L<< E<lt>sattellite@bks-tv.ruE<gt> >> 
 
-=head1 ЛИЦЕНЗИЯ
+=head1 LICENSE AND COPYRIGHT
 
 Эта программа распространяется под лицензией MIT (MIT License)
 
@@ -98,8 +90,5 @@ Copyright (c) 2010 Aleksander Groschev
 УЩЕРБА, УБЫТКОВ ИЛИ ДРУГИХ ТРЕБОВАНИЙ ПО ДЕЙСТВУЮЩИМ КОНТРАКТАМ, ДЕЛИКТАМ ИЛИ ИНОМУ,
 ВОЗНИКШИМ ИЗ, ИМЕЮЩИМ ПРИЧИНОЙ ИЛИ СВЯЗАННЫМ С ПРОГРАММНЫМ ОБЕСПЕЧЕНИЕМ ИЛИ
 ИСПОЛЬЗОВАНИЕМ ПРОГРАММНОГО ОБЕСПЕЧЕНИЯ ИЛИ ИНЫМИ ДЕЙСТВИЯМИ С ПРОГРАММНЫМ ОБЕСПЕЧЕНИЕМ.
-
-=head4 TODO
-1. Сделать проверку в 23 и 31 строках.
 
 =cut
